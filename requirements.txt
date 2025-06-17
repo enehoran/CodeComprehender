@@ -1,0 +1,20 @@
+# For cloning git repositories
+gitpython
+
+# For creating the architecture diagram
+# Note: The graphviz Python package requires the Graphviz software to be installed separately
+# Download and install from: https://graphviz.org/download/
+graphviz
+
+# For making API calls to the LLM
+# We will use OpenRouter, which has a standard OpenAI-compatible API
+openai
+
+python-dotenv
+google-genai
+javalang
+plantweb
+
+# For testing
+pytest
+pytest-mock
