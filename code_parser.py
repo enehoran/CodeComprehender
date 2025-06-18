@@ -144,7 +144,8 @@ def build_class_index(java_files):
             logging.warning(f"Could not open {file_path}. Skipping file. {e}")
     return class_index
 
-
+def is_top_level_class(path):
+    return isinstance(path[1], list) and len(path[1]) == 1
 
 def parse_java_file(file_path, original_lines, project_class_index):
     """
@@ -158,10 +159,14 @@ def parse_java_file(file_path, original_lines, project_class_index):
         known_classes = set(project_class_index.keys())
 
         classes = []
-        for _, class_decl in tree.filter(javalang.tree.ClassDeclaration):
+        for path, class_decl in tree.filter(javalang.tree.ClassDeclaration):
+            # Only process top-level classes (path length 1 means root-level node)
+            if not is_top_level_class(path):
+                continue
+
+            # Get classes details.
             class_start = get_start_line(class_decl)
             class_end = get_end_line(class_decl)
-
             class_info = {
                 'name': class_decl.name,
                 'start_line': class_start,

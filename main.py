@@ -23,6 +23,7 @@ def main():
     parser.add_argument("--exclude", nargs='*', default=[],
                         help="A list of regex patterns to exclude files/directories. "
                              "Example: --exclude '.*Test.java' 'build/.*'")
+    parser.add_argument("--high_res_diagram", action="store_true", help="Whether to include all class fields and methods in the architecture diagram. Not recommended for large or complex code repositories.")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output.")
     parser.add_argument("--generate_suggestions", action="store_true", help="Include suggestions within added comments in the form of TODOs, and creates a markdown document with high-level comments in the specified output directory.")
     args = parser.parse_args()
@@ -91,7 +92,7 @@ def main():
             # comment_inserter.create_commented_file(structure_with_comments, output_path)
 
     if all_parsed_data:
-        diagram_builder.generate_architecture_diagram(all_parsed_data, output_path)
+        diagram_builder.generate_architecture_diagram(all_parsed_data, output_path, args.high_res_diagram)
         high_level_comment = llm_handler.generate_high_level_comments(all_parsed_data, client, source_path)
         try:
             with open(output_path / "README_CODECOMPREHENDER.md", 'w', encoding='utf-8') as f:

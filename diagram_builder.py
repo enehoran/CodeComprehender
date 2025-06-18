@@ -48,7 +48,7 @@ def format_method(method):
 
     return f"{visibility} {method['name']}(){stereotype_str}"
 
-def write_class_block(f, class_data):
+def write_class_block(f, class_data, high_res=False):
     """
     Writes a PlantUML class/interface/abstract class block.
     """
@@ -69,37 +69,39 @@ def write_class_block(f, class_data):
     else:
         f.write(f"  class {name} {stereotype} {{\n")
 
-    for field in fields:
-        f.write(f"    {format_field(field)}\n")
+    if high_res:
+        for field in fields:
+            f.write(f"    {format_field(field)}\n")
 
-    for method in methods:
-        f.write(f"    {format_method(method)}\n")
+        for method in methods:
+            f.write(f"    {format_method(method)}\n")
 
     f.write("  }\n")
 
 
-def write_class_block_inline(class_data):
+def write_class_block_inline(class_data, high_res=False):
     """
     Returns a string representing a class/interface block in PlantUML.
     """
     from io import StringIO
     buf = StringIO()
-    write_class_block(buf, class_data)
+    write_class_block(buf, class_data, high_res)
     return buf.getvalue()
 
-def generate_architecture_diagram(all_parsed_data, output_dir):
+def generate_architecture_diagram(all_parsed_data, output_dir, high_res):
     """
     Generates a PlantUML architecture diagram from parsed Java code data.
 
     Args:
         all_parsed_data: List of dictionaries containing parsed Java code information
         output_dir: Directory where the diagram file will be saved
+        high_res: Whether to display all methods and fields within each class. Recommended to disable for large code directories.
 
     Returns:
         None. The diagram is written to a file in the output directory.
     """
     output_path = output_dir / "architecture.puml"
-    builder = DiagramBuilder()
+    builder = DiagramBuilder(high_res=high_res)
 
     for file_data in all_parsed_data:
         if not file_data:
@@ -126,10 +128,11 @@ def generate_architecture_diagram(all_parsed_data, output_dir):
 
 
 class DiagramBuilder:
-    def __init__(self):
+    def __init__(self, high_res=False):
         self.packages = defaultdict(list)
         self.relationships = set()
         self.buffer = []
+        self.high_res = high_res
 
     def add_class(self, package_name, class_data):
         self.packages[package_name].append(class_data)
@@ -177,7 +180,7 @@ class DiagramBuilder:
             alias = package_name.replace(".", "_")
             self.buffer.append(f'package "{package_name}" as {alias} {{')
             for class_data in classes:
-                self.buffer.append(write_class_block_inline(class_data))
+                self.buffer.append(write_class_block_inline(class_data, self.high_res))
             self.buffer.append("}")
 
     def _write_relationships(self):
