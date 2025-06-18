@@ -24,8 +24,9 @@ def main():
                         help="A list of regex patterns to exclude files/directories. "
                              "Example: --exclude '.*Test.java' 'build/.*'")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output.")
-    parser.add_argument("--generate_suggestions", action="store_false", help="Include suggestions within added comments in the form of TODOs, and creates a markdown document with high-level comments in the specified output directory.")
+    parser.add_argument("--no_generate_suggestions", action="store_false", help="By default, the tool adds suggestions within added comments in the form of TODOs, and creates a markdown document with high-level comments in the specified output directory. If set, these features are skipped.")
     args = parser.parse_args()
+    generate_suggestions = not args.no_generate_suggestions
 
     if args.verbose:
         logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -75,6 +76,7 @@ def main():
     project_class_index = code_parser.build_class_index(java_files)
 
     # Second pass: parse contents of all classes.
+    # TODO: consider using parallel processing for a future version. I'm limited right now because of the LLM quota anyways.
     for file_path in tqdm(filtered_java_files, desc="Processing Java files", unit="files", total=len(filtered_java_files)):
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
@@ -87,12 +89,12 @@ def main():
         if parsed_structure:
             all_parsed_data.append(parsed_structure)
 
-            structure_with_comments = llm_handler.generate_comments_for_structure(parsed_structure, client, args.generate_suggestions)
+            structure_with_comments = llm_handler.generate_comments_for_structure(parsed_structure, client, generate_suggestions)
             comment_inserter.create_commented_file(structure_with_comments, output_path)
 
     if all_parsed_data:
         # Generate a document with high-level documentation and comments.
-        if args.generate_suggestions:
+        if generate_suggestions:
             high_level_comment = llm_handler.generate_high_level_comments(all_parsed_data, client, source_path)
             try:
                 with open(output_path / "README_CODECOMPREHENDER.md", 'w', encoding='utf-8') as f:
