@@ -4,6 +4,15 @@ import logging
 # Architecture Extractor Module
 
 def format_field(field):
+    """
+    Formats a field for PlantUML representation with proper visibility and stereotypes.
+
+    Args:
+        field: Dictionary containing field information including name, type, and modifiers
+
+    Returns:
+        Formatted string representation of the field for PlantUML
+    """
     visibility = "+"
     if 'private' in field.get('modifiers', []): visibility = "-"
     elif 'protected' in field.get('modifiers', []): visibility = "#"
@@ -18,6 +27,15 @@ def format_field(field):
     return f"{visibility} {field['name']} : {field_type}{stereotype_str}"
 
 def format_method(method):
+    """
+    Formats a method for PlantUML representation with proper visibility and stereotypes.
+
+    Args:
+        method: Dictionary containing method information including name and modifiers
+
+    Returns:
+        Formatted string representation of the method for PlantUML
+    """
     visibility = "+"
     if 'private' in method.get('modifiers', []): visibility = "-"
     elif 'protected' in method.get('modifiers', []): visibility = "#"
@@ -70,6 +88,16 @@ def write_class_block_inline(class_data):
     return buf.getvalue()
 
 def generate_architecture_diagram(all_parsed_data, output_dir):
+    """
+    Generates a PlantUML architecture diagram from parsed Java code data.
+
+    Args:
+        all_parsed_data: List of dictionaries containing parsed Java code information
+        output_dir: Directory where the diagram file will be saved
+
+    Returns:
+        None. The diagram is written to a file in the output directory.
+    """
     output_path = output_dir / "architecture.puml"
     builder = DiagramBuilder()
 
@@ -107,6 +135,17 @@ class DiagramBuilder:
         self.packages[package_name].append(class_data)
 
     def add_relationship(self, source, target, rel_type):
+        """
+        Adds a relationship between two classes to the diagram.
+
+        Args:
+            source: Source class name
+            target: Target class name
+            rel_type: Type of relationship ('extends', 'implements', or 'uses')
+
+        Returns:
+            None. The relationship is added to the internal relationships set.
+        """
         arrow = {
             "extends": f"{target} <|-- {source} : extends",
             "implements": f"{target} <|.. {source} : implements",
@@ -116,6 +155,12 @@ class DiagramBuilder:
             self.relationships.add(arrow)
 
     def build(self):
+        """
+        Builds the complete PlantUML diagram by combining all components.
+
+        Returns:
+            String containing the complete PlantUML diagram code
+        """
         self._write_header()
         self._write_packages()
         self._write_relationships()

@@ -23,13 +23,15 @@ def main():
     parser.add_argument("--exclude", nargs='*', default=[],
                         help="A list of regex patterns to exclude files/directories. "
                              "Example: --exclude '.*Test.java' 'build/.*'")
-    parser.add_argument("--verbose", type=bool, default=False, help="Verbose output.")
+    parser.add_argument("--verbose", action="store_true", help="Enable verbose output.")
+    parser.add_argument("--generate_suggestions", action="store_true", help="Include suggestions within added comments in the form of TODOs, and creates a markdown document with high-level comments in the specified output directory.")
     args = parser.parse_args()
 
     if args.verbose:
-        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-    else:
         logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+        logging.info("Verbose mode is enabled.")
+    else:
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
     if not args.api_key:
         logging.error(
@@ -69,9 +71,10 @@ def main():
         filtered_java_files.append(file_path)
     logging.info(f"Found {len(filtered_java_files)} Java files to process.")
 
-    # First pass: build index of all project classes
+    # First pass: build index of all project classes to enable tracking dependencies.
     project_class_index = code_parser.build_class_index(java_files)
 
+    # Second pass: parse contents of all classes.
     for file_path in tqdm(filtered_java_files, desc="Processing Java files", unit="files", total=len(filtered_java_files)):
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
@@ -89,6 +92,13 @@ def main():
 
     if all_parsed_data:
         diagram_builder.generate_architecture_diagram(all_parsed_data, output_path)
+        high_level_comment = llm_handler.generate_high_level_comments(all_parsed_data, client, source_path)
+        try:
+            with open(output_path / "README_CODECOMPREHENDER.md", 'w', encoding='utf-8') as f:
+                f.write(high_level_comment)
+            logging.info(f"High-level comments generated at {output_path}/README_CODECOMPREHENDER.md")
+        except Exception as e:
+            logging.error(f"Failed to write high-level comments: {e}", exc_info=True)
 
     logging.info("Processing complete.")
 
