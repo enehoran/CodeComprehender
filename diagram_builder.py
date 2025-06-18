@@ -1,5 +1,4 @@
 from collections import defaultdict
-import logging
 
 # Architecture Extractor Module
 
@@ -48,7 +47,7 @@ def format_method(method):
 
     return f"{visibility} {method['name']}(){stereotype_str}"
 
-def write_class_block(f, class_data, high_res=False):
+def write_class_block(f, class_data):
     """
     Writes a PlantUML class/interface/abstract class block.
     """
@@ -69,39 +68,37 @@ def write_class_block(f, class_data, high_res=False):
     else:
         f.write(f"  class {name} {stereotype} {{\n")
 
-    if high_res:
-        for field in fields:
-            f.write(f"    {format_field(field)}\n")
+    for field in fields:
+        f.write(f"    {format_field(field)}\n")
 
-        for method in methods:
-            f.write(f"    {format_method(method)}\n")
+    for method in methods:
+        f.write(f"    {format_method(method)}\n")
 
     f.write("  }\n")
 
 
-def write_class_block_inline(class_data, high_res=False):
+def write_class_block_inline(class_data):
     """
     Returns a string representing a class/interface block in PlantUML.
     """
     from io import StringIO
     buf = StringIO()
-    write_class_block(buf, class_data, high_res)
+    write_class_block(buf, class_data)
     return buf.getvalue()
 
-def generate_architecture_diagram(all_parsed_data, output_dir, high_res):
+def generate_architecture_diagram(all_parsed_data, output_dir):
     """
     Generates a PlantUML architecture diagram from parsed Java code data.
 
     Args:
         all_parsed_data: List of dictionaries containing parsed Java code information
         output_dir: Directory where the diagram file will be saved
-        high_res: Whether to display all methods and fields within each class. Recommended to disable for large code directories.
 
     Returns:
         None. The diagram is written to a file in the output directory.
     """
     output_path = output_dir / "architecture.puml"
-    builder = DiagramBuilder(high_res=high_res)
+    builder = DiagramBuilder()
 
     for file_data in all_parsed_data:
         if not file_data:
@@ -118,21 +115,14 @@ def generate_architecture_diagram(all_parsed_data, output_dir, high_res):
             for dep in class_info.get('dependencies', []):
                 if dep != class_info['name']:
                     builder.add_relationship(class_info['name'], dep, 'uses')
-
-    try:
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write(builder.build())
-        logging.info(f"Diagram generated at {output_path}")
-    except Exception as e:
-        logging.error(f"Failed to write PlantUML diagram: {e}", exc_info=True)
+    return builder.build()
 
 
 class DiagramBuilder:
-    def __init__(self, high_res=False):
+    def __init__(self):
         self.packages = defaultdict(list)
         self.relationships = set()
         self.buffer = []
-        self.high_res = high_res
 
     def add_class(self, package_name, class_data):
         self.packages[package_name].append(class_data)
@@ -173,6 +163,7 @@ class DiagramBuilder:
     def _write_header(self):
         self.buffer.append("@startuml")
         self.buffer.append("skinparam packageStyle rect")
+        self.buffer.append("hide empty members")
         self.buffer.append("title CodeComprehender Architecture Diagram\n")
 
     def _write_packages(self):
@@ -180,7 +171,7 @@ class DiagramBuilder:
             alias = package_name.replace(".", "_")
             self.buffer.append(f'package "{package_name}" as {alias} {{')
             for class_data in classes:
-                self.buffer.append(write_class_block_inline(class_data, self.high_res))
+                self.buffer.append(write_class_block_inline(class_data))
             self.buffer.append("}")
 
     def _write_relationships(self):

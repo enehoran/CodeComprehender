@@ -23,7 +23,6 @@ def main():
     parser.add_argument("--exclude", nargs='*', default=[],
                         help="A list of regex patterns to exclude files/directories. "
                              "Example: --exclude '.*Test.java' 'build/.*'")
-    parser.add_argument("--high_res_diagram", action="store_true", help="Whether to include all class fields and methods in the architecture diagram. Not recommended for large or complex code repositories.")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output.")
     parser.add_argument("--generate_suggestions", action="store_true", help="Include suggestions within added comments in the form of TODOs, and creates a markdown document with high-level comments in the specified output directory.")
     args = parser.parse_args()
@@ -92,7 +91,11 @@ def main():
             # comment_inserter.create_commented_file(structure_with_comments, output_path)
 
     if all_parsed_data:
-        diagram_builder.generate_architecture_diagram(all_parsed_data, output_path, args.high_res_diagram)
+        # Create full UML specifications.
+        uml_code = diagram_builder.generate_architecture_diagram(all_parsed_data, output_path)
+        # Simplify UML using LLM to reduce visual clutter.
+        simplified_uml = llm_handler.generate_simplified_uml(client, source_path, uml_code)
+        # Generate a document with high-level documentation and comments.
         high_level_comment = llm_handler.generate_high_level_comments(all_parsed_data, client, source_path)
         try:
             with open(output_path / "README_CODECOMPREHENDER.md", 'w', encoding='utf-8') as f:
@@ -100,7 +103,18 @@ def main():
             logging.info(f"High-level comments generated at {output_path}/README_CODECOMPREHENDER.md")
         except Exception as e:
             logging.error(f"Failed to write high-level comments: {e}", exc_info=True)
-
+        try:
+            with open(output_path / "architecture_simplified_view.puml", 'w', encoding='utf-8') as f:
+                f.write(simplified_uml)
+            logging.info(f"Simplified architecture diagram {output_path}")
+        except Exception as e:
+            logging.error(f"Failed to write simplified PlantUML diagram: {e}. Writing full diagram.")
+        try:
+            with open(output_path / "architecture_full.puml", 'w', encoding='utf-8') as f:
+                f.write(uml_code)
+                logging.info(f"Full architecture diagram generated at {output_path}/architecture_full.puml")
+        except Exception as e:
+            logging.error(f"Failed to write full architecture diagram: {e}", exc_info=True)
     logging.info("Processing complete.")
 
 

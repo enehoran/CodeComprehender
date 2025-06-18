@@ -62,6 +62,7 @@ def generate_comments_for_structure(parsed_structure, client):
 
     return parsed_structure
 
+
 def generate_high_level_comments(all_parsed_data, client, directory, model_name="gemini-2.0-flash", num_retries=8):
     logging.debug(f"Generating overall comments for {directory}...")
     if not client:
@@ -77,6 +78,34 @@ def generate_high_level_comments(all_parsed_data, client, directory, model_name=
             )
             if response.text:
                 return response.text.strip().removeprefix("```markdown").removesuffix("```")
+        except Exception as e:
+            logging.warning(f"Error calling LLM API on attempt {attempt + 1}: {e}")
+
+        if attempt < num_retries - 1:
+            wait_time = _initial_retry_delay * (2 ** attempt)
+            logging.info(f"Retrying LLM call in {wait_time} seconds...")
+            time.sleep(wait_time)
+
+    logging.error(f"LLM returned an empty or failed response after {num_retries} attempts for a directory-level comment.")
+    return None
+
+
+def generate_simplified_uml(client, directory, uml_buffer, model_name="gemini-2.0-flash", num_retries=8):
+    logging.debug(f"Simplifying architecture diagram for {directory}...")
+    if not client:
+        logging.warning("LLM model is not available. Skipping overall comments generation.")
+        return None
+    for attempt in range(num_retries):
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                config=genai.types.GenerateContentConfig(
+                    temperature=0.1
+                ),
+                contents=prompts.SIMPLIFY_UML_PROMPT.format(plantuml_code=uml_buffer),
+            )
+            if response.text:
+                return response.text.strip().removeprefix("```plantuml").removesuffix("```")
         except Exception as e:
             logging.warning(f"Error calling LLM API on attempt {attempt + 1}: {e}")
 
