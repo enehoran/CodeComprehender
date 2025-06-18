@@ -18,8 +18,6 @@ architecture, and produces high-level documentation for better code understandin
 ### Prerequisites
 
 - Python 3.8 or higher
-- Graphviz (required for UML diagram generation)
-    - Download and install from: https://graphviz.org/download/
 - Google Gemini API key
 
 ### Setup
@@ -115,10 +113,7 @@ The tool generates:
 
 - google-genai: For Google's Gemini API
 - javalang: For parsing Java code
-- graphviz: For creating architecture diagrams
-- plantweb: For rendering PlantUML diagrams
 - python-dotenv: For loading environment variables
-- gitpython: For cloning git repositories (if needed)
 
 ## Project Structure
 
