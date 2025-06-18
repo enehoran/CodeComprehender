@@ -60,6 +60,7 @@ def generate_comments_for_structure(parsed_structure, client, generate_suggestio
     else:
         prompt = prompts.JAVA_COMMENT_GENERATION_PROMPT
 
+    # TODO: for small-enough files (within the LLM context window), we can input the full file to save LLM calls
     for class_info in parsed_structure.get('classes', []):
         class_info['comment'] = get_llm_comment(client, class_info['code_snippet'], 'class', prompt=prompt)
         for method_info in class_info.get('methods', []):
