@@ -1,5 +1,5 @@
-from pathlib import Path
 import logging
+from pathlib import Path
 
 
 def create_commented_file(parsed_structure_with_comments, output_dir):

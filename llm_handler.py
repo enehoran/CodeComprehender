@@ -1,9 +1,12 @@
 import logging
-from google import genai
 import time
+
+from google import genai
+
 import prompts
 
 _initial_retry_delay = 2
+
 
 def configure_llm(api_key):
     """Configures the generative AI model."""
@@ -11,7 +14,9 @@ def configure_llm(api_key):
     logging.info("Generative AI model configured successfully.")
     return client
 
-def get_llm_comment(client, code_snippet, element_type, model_name="gemini-2.0-flash", prompt=prompts.JAVA_COMMENT_GENERATION_PROMPT, num_retries=8):
+
+def get_llm_comment(client, code_snippet, element_type, model_name="gemini-2.0-flash",
+                    prompt=prompts.JAVA_COMMENT_GENERATION_PROMPT, num_retries=8):
     """
     Generates a comment for a given code snippet using the LLM.
     """
@@ -23,7 +28,7 @@ def get_llm_comment(client, code_snippet, element_type, model_name="gemini-2.0-f
             response = client.models.generate_content(
                 model=model_name,
                 config=genai.types.GenerateContentConfig(
-                system_instruction="You are a helpful Java documentation assistant."),
+                    system_instruction="You are a helpful Java documentation assistant."),
                 contents=prompt
             )
             if response.text:
@@ -50,7 +55,8 @@ def generate_comments_for_structure(parsed_structure, client, generate_suggestio
     """
     Generates comments for classes and methods using the configured LLM.
     """
-    logging.debug(f"Generating comments {"with suggestions" if generate_suggestions else ""}for {parsed_structure['file_path']}...")
+    logging.debug(
+        f"Generating comments {"with suggestions" if generate_suggestions else ""}for {parsed_structure['file_path']}...")
     if not client:
         logging.warning("LLM model is not available. Skipping comment generation.")
         return parsed_structure
@@ -64,7 +70,7 @@ def generate_comments_for_structure(parsed_structure, client, generate_suggestio
     for class_info in parsed_structure.get('classes', []):
         class_info['comment'] = get_llm_comment(client, class_info['code_snippet'], 'class', prompt=prompt)
         for method_info in class_info.get('methods', []):
-            method_info['comment'] = get_llm_comment(client, method_info['code_snippet'], 'method',  prompt=prompt)
+            method_info['comment'] = get_llm_comment(client, method_info['code_snippet'], 'method', prompt=prompt)
 
     return parsed_structure
 
@@ -92,7 +98,8 @@ def generate_high_level_comments(all_parsed_data, client, directory, model_name=
             logging.info(f"Retrying LLM call in {wait_time} seconds...")
             time.sleep(wait_time)
 
-    logging.error(f"LLM returned an empty or failed response after {num_retries} attempts for a directory-level comment.")
+    logging.error(
+        f"LLM returned an empty or failed response after {num_retries} attempts for a directory-level comment.")
     return None
 
 
@@ -120,5 +127,6 @@ def generate_simplified_uml(client, directory, uml_buffer, model_name="gemini-2.
             logging.info(f"Retrying LLM call in {wait_time} seconds...")
             time.sleep(wait_time)
 
-    logging.error(f"LLM returned an empty or failed response after {num_retries} attempts for a directory-level comment.")
+    logging.error(
+        f"LLM returned an empty or failed response after {num_retries} attempts for a directory-level comment.")
     return None

@@ -1,14 +1,16 @@
-import os
 import argparse
 import logging
-from dotenv import load_dotenv
+import os
 import re
-from tqdm import tqdm
-import diagram_builder
 from pathlib import Path
-import comment_inserter
-import llm_handler
+
+from dotenv import load_dotenv
+from tqdm import tqdm
+
 import code_parser
+import comment_inserter
+import diagram_builder
+import llm_handler
 
 
 def main():
@@ -24,7 +26,8 @@ def main():
                         help="A list of regex patterns to exclude files/directories. "
                              "Example: --exclude '.*Test.java' 'build/.*'")
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output.")
-    parser.add_argument("--no_generate_suggestions", action="store_false", help="By default, the tool adds suggestions within added comments in the form of TODOs, and creates a markdown document with high-level comments in the specified output directory. If set, these features are skipped.")
+    parser.add_argument("--no_generate_suggestions", action="store_false",
+                        help="By default, the tool adds suggestions within added comments in the form of TODOs, and creates a markdown document with high-level comments in the specified output directory. If set, these features are skipped.")
     args = parser.parse_args()
     generate_suggestions = not args.no_generate_suggestions
 
@@ -77,7 +80,8 @@ def main():
 
     # Second pass: parse contents of all classes.
     # TODO: consider using parallel processing for a future version. I'm limited right now because of the LLM quota anyways.
-    for file_path in tqdm(filtered_java_files, desc="Processing Java files", unit="files", total=len(filtered_java_files)):
+    for file_path in tqdm(filtered_java_files, desc="Processing Java files", unit="files",
+                          total=len(filtered_java_files)):
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 lines = f.readlines()
@@ -89,7 +93,8 @@ def main():
         if parsed_structure:
             all_parsed_data.append(parsed_structure)
 
-            structure_with_comments = llm_handler.generate_comments_for_structure(parsed_structure, client, generate_suggestions)
+            structure_with_comments = llm_handler.generate_comments_for_structure(parsed_structure, client,
+                                                                                  generate_suggestions)
             comment_inserter.create_commented_file(structure_with_comments, output_path)
 
     if all_parsed_data:

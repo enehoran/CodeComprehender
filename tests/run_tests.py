@@ -1,6 +1,6 @@
-import unittest
-import sys
 import os
+import sys
+import unittest
 
 # Add the parent directory to sys.path to import the modules
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -9,6 +9,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from tests.test_llm_handler import TestLLMHandler
 from tests.test_code_parser import TestCodeParser
 from tests.test_diagram_builder import TestDiagramBuilder
+
 
 def run_tests():
     """Run all tests and print a summary."""
@@ -32,6 +33,7 @@ def run_tests():
 
     # Return exit code based on test results
     return 0 if result.wasSuccessful() else 1
+
 
 if __name__ == "__main__":
     sys.exit(run_tests())

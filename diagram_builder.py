@@ -1,5 +1,6 @@
-from collections import defaultdict
 import logging
+from collections import defaultdict
+
 
 # Architecture Extractor Module
 
@@ -10,6 +11,7 @@ def write_uml(file_path, content, description):
         logging.info(f"{description} diagram written to {file_path}")
     except Exception as e:
         logging.error(f"Failed to write {description} diagram: {e}", exc_info=True)
+
 
 def format_field(field):
     """
@@ -22,9 +24,12 @@ def format_field(field):
         Formatted string representation of the field for PlantUML
     """
     visibility = "+"
-    if 'private' in field.get('modifiers', []): visibility = "-"
-    elif 'protected' in field.get('modifiers', []): visibility = "#"
-    elif not any(mod in field.get('modifiers', []) for mod in ['public', 'private', 'protected']): visibility = "~"
+    if 'private' in field.get('modifiers', []):
+        visibility = "-"
+    elif 'protected' in field.get('modifiers', []):
+        visibility = "#"
+    elif not any(mod in field.get('modifiers', []) for mod in ['public', 'private', 'protected']):
+        visibility = "~"
 
     stereotypes = []
     if 'static' in field.get('modifiers', []): stereotypes.append("static")
@@ -33,6 +38,7 @@ def format_field(field):
 
     field_type = field.get('type', 'Object')
     return f"{visibility} {field['name']} : {field_type}{stereotype_str}"
+
 
 def format_method(method):
     """
@@ -45,9 +51,12 @@ def format_method(method):
         Formatted string representation of the method for PlantUML
     """
     visibility = "+"
-    if 'private' in method.get('modifiers', []): visibility = "-"
-    elif 'protected' in method.get('modifiers', []): visibility = "#"
-    elif not any(mod in method.get('modifiers', []) for mod in ['public', 'private', 'protected']): visibility = "~"
+    if 'private' in method.get('modifiers', []):
+        visibility = "-"
+    elif 'protected' in method.get('modifiers', []):
+        visibility = "#"
+    elif not any(mod in method.get('modifiers', []) for mod in ['public', 'private', 'protected']):
+        visibility = "~"
 
     stereotypes = []
     if 'abstract' in method.get('modifiers', []): stereotypes.append("abstract")
@@ -55,6 +64,7 @@ def format_method(method):
     stereotype_str = f" {{{{{', '.join(stereotypes)}}}}}" if stereotypes else ""
 
     return f"{visibility} {method['name']}(){stereotype_str}"
+
 
 def write_class_block(f, class_data):
     """
@@ -94,6 +104,7 @@ def write_class_block_inline(class_data):
     buf = StringIO()
     write_class_block(buf, class_data)
     return buf.getvalue()
+
 
 def generate_architecture_diagram(all_parsed_data, output_dir):
     """

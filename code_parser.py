@@ -1,5 +1,6 @@
-import javalang
 import logging
+
+import javalang
 
 
 def get_code_from_lines(lines, start_line, end_line):
@@ -7,6 +8,7 @@ def get_code_from_lines(lines, start_line, end_line):
     if not start_line or not end_line:
         return ""
     return "".join(lines[start_line - 1: end_line])
+
 
 def get_start_line(node):
     """
@@ -19,6 +21,7 @@ def get_start_line(node):
         The line number where the node starts, or 0 if position information is not available
     """
     return node.position.line if hasattr(node, 'position') and node.position else 0
+
 
 def get_end_line(node):
     """
@@ -38,6 +41,7 @@ def get_end_line(node):
         if child.position.line > max_line:
             max_line = child.position.line
     return max_line + 1
+
 
 def parse_methods(class_decl, lines, known_classes):
     """
@@ -65,6 +69,7 @@ def parse_methods(class_decl, lines, known_classes):
         })
     return methods
 
+
 def parse_fields(class_decl, known_classes):
     """
     Extracts field information from a Java class declaration.
@@ -86,6 +91,7 @@ def parse_fields(class_decl, known_classes):
                 'modifiers': list(getattr(field, 'modifiers', []))
             })
     return fields
+
 
 def collect_class_dependencies(class_decl, known_classes):
     """
@@ -144,8 +150,10 @@ def build_class_index(java_files):
             logging.warning(f"Could not open {file_path}. Skipping file. {e}")
     return class_index
 
+
 def is_top_level_class(path):
     return isinstance(path[1], list) and len(path[1]) == 1
+
 
 def parse_java_file(file_path, original_lines, project_class_index):
     """

@@ -1,6 +1,8 @@
 # CodeComprehender
 
-CodeComprehender is a powerful tool for automated Java code documentation. It analyzes Java source code, generates comprehensive comments using Google's Gemini LLM (Large Language Model), creates UML diagrams to visualize the code architecture, and produces high-level documentation for better code understanding.
+CodeComprehender is a powerful tool for automated Java code documentation. It analyzes Java source code, generates
+comprehensive comments using Google's Gemini LLM (Large Language Model), creates UML diagrams to visualize the code
+architecture, and produces high-level documentation for better code understanding.
 
 ## Features
 
@@ -17,7 +19,7 @@ CodeComprehender is a powerful tool for automated Java code documentation. It an
 
 - Python 3.8 or higher
 - Graphviz (required for UML diagram generation)
-  - Download and install from: https://graphviz.org/download/
+    - Download and install from: https://graphviz.org/download/
 - Google Gemini API key
 
 ### Setup
@@ -54,9 +56,11 @@ python main.py <source_dir> <output_dir> [options]
 ### Options
 
 - `--api_key KEY`: API key for the Gemini LLM (can also be set via GEMINI_API_KEY environment variable)
-- `--exclude PATTERN [PATTERN ...]`: A list of regex patterns to exclude files/directories (e.g., `--exclude '.*Test.java' 'build/.*'`)
+- `--exclude PATTERN [PATTERN ...]`: A list of regex patterns to exclude files/directories (e.g.,
+  `--exclude '.*Test.java' 'build/.*'`)
 - `--verbose`: Enable verbose output
-- `--generate_suggestions`: Generates suggestions within added comments in the form of TODOs, and creates a markdown document with high-level comments
+- `--generate_suggestions`: Generates suggestions within added comments in the form of TODOs, and creates a markdown
+  document with high-level comments
 
 ### Example
 
@@ -79,14 +83,18 @@ python main.py ./my-java-project ./documentation --api_key YOUR_API_KEY_HERE
 The tool generates:
 
 1. Commented Java files with the suffix "_commented" in the output directory, preserving the package structure.
-   - If using `--generate_suggestions`, the comments also contain TODO suggestions to improve code structure and readability.
+    - If using `--generate_suggestions`, the comments also contain TODO suggestions to improve code structure and
+      readability.
 2. UML diagrams:
-   - `architecture_full.puml`: Complete architecture diagram with all classes and relationships.
-      - For large code directories, it is NOT recommended to use this directly. In such cases, it is recommended to use the simplified view instead, described below.
-   - `architecture_simplified_view.puml`: Simplified architecture diagram for better readability.
-     - This view is optimized for reducing visual clutter while preserving the most important architectural relationships and structures.
-   - To view the generated diagrams, you may use a PlantUML server such as [PlantText](https://www.planttext.com/) or [PlantUML Web Server](plantuml.com).
-3. `README_CODECOMPREHENDER.md`: High-level documentation of the source project with suggestions for code improvement 
+    - `architecture_full.puml`: Complete architecture diagram with all classes and relationships.
+        - For large code directories, it is NOT recommended to use this directly. In such cases, it is recommended to
+          use the simplified view instead, described below.
+    - `architecture_simplified_view.puml`: Simplified architecture diagram for better readability.
+        - This view is optimized for reducing visual clutter while preserving the most important architectural
+          relationships and structures.
+    - To view the generated diagrams, you may use a PlantUML server such as [PlantText](https://www.planttext.com/)
+      or [PlantUML Web Server](plantuml.com).
+3. `README_CODECOMPREHENDER.md`: High-level documentation of the source project with suggestions for code improvement
    (when using `--generate_suggestions`)
 
 ## How It Works
@@ -95,11 +103,13 @@ The tool generates:
 2. **Analysis**: Programmatically extracts class structure, methods, fields, and dependencies.
 3. **Documentation Generation**: Uses Google's Gemini LLM to generate comments, using the structure analysis as input.
 4. **UML Creation**: Generates PlantUML diagrams showing class relationships. This is implemented as two steps:
-   1. **Programmatic Step**: Programmatic generation of a highly comprehensive PlantUML code for an architecture diagram based on the structure analysis.
-   2. **LLM-Based Step**: The comprehensive PlantUML code is input into an LLM, and the LLM simplifies the PlantUML code as much as needed 
-      based on the complexity of the class structures and relationships. This step ensures an appropriate amount of
-      granularity of the output diagram that is optimmized for reducing visual clutter while preserving the key
-      architectural relationships and structures.
+    1. **Programmatic Step**: Programmatic generation of a highly comprehensive PlantUML code for an architecture
+       diagram based on the structure analysis.
+    2. **LLM-Based Step**: The comprehensive PlantUML code is input into an LLM, and the LLM simplifies the PlantUML
+       code as much as needed
+       based on the complexity of the class structures and relationships. This step ensures an appropriate amount of
+       granularity of the output diagram that is optimmized for reducing visual clutter while preserving the key
+       architectural relationships and structures.
 
 ## Dependencies
 
