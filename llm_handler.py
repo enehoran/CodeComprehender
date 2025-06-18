@@ -46,19 +46,24 @@ def get_llm_comment(client, code_snippet, element_type, model_name="gemini-2.0-f
     return f"/**\n * Failed to generate comment for this {element_type} after multiple retries.\n */"
 
 
-def generate_comments_for_structure(parsed_structure, client):
+def generate_comments_for_structure(parsed_structure, client, generate_suggestions=False):
     """
     Generates comments for classes and methods using the configured LLM.
     """
-    logging.debug(f"Generating comments for {parsed_structure['file_path']}...")
+    logging.debug(f"Generating comments {"with suggestions" if generate_suggestions else ""}for {parsed_structure['file_path']}...")
     if not client:
         logging.warning("LLM model is not available. Skipping comment generation.")
         return parsed_structure
 
+    if generate_suggestions:
+        prompt = prompts.JAVA_COMMENT_GENERATION_PROMPT_WITH_SUGGESTIONS
+    else:
+        prompt = prompts.JAVA_COMMENT_GENERATION_PROMPT
+
     for class_info in parsed_structure.get('classes', []):
-        class_info['comment'] = get_llm_comment(client, class_info['code_snippet'], 'class', prompt=prompts.JAVA_COMMENT_GENERATION_PROMPT_WITH_SUGGESTIONS)
+        class_info['comment'] = get_llm_comment(client, class_info['code_snippet'], 'class', prompt=prompt)
         for method_info in class_info.get('methods', []):
-            method_info['comment'] = get_llm_comment(client, method_info['code_snippet'], 'method',  prompt=prompts.JAVA_COMMENT_GENERATION_PROMPT_WITH_SUGGESTIONS)
+            method_info['comment'] = get_llm_comment(client, method_info['code_snippet'], 'method',  prompt=prompt)
 
     return parsed_structure
 

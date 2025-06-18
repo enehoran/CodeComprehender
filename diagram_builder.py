@@ -1,6 +1,15 @@
 from collections import defaultdict
+import logging
 
 # Architecture Extractor Module
+
+def write_uml(file_path, content, description):
+    try:
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(content)
+        logging.info(f"{description} diagram written to {file_path}")
+    except Exception as e:
+        logging.error(f"Failed to write {description} diagram: {e}", exc_info=True)
 
 def format_field(field):
     """
